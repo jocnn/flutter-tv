@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../main.dart';
+import '../../../routes/routes.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -19,14 +20,36 @@ class _SplashViewState extends State<SplashView> {
   }
 
   Future<void> _init() async {
-    final connectivityRepo = Injector.of(context).connectivityRepository;
+    final injector = Injector.of(context);
+
+    final connectivityRepo = injector.connectivityRepository;
     final hasInternet = await connectivityRepo.hasInternet;
 
     if (hasInternet) {
       debugPrint("🔥");
+      final authenticationRepository = injector.authenticationRepository;
+      final isSignedIn = await authenticationRepository.isSignedIn;
+
+      if (isSignedIn) {
+        final user = await authenticationRepository.getUserData();
+
+        if (mounted) {
+          if (user != null) {
+            _goTo(Routes.home);
+          } else {
+            _goTo(Routes.signIn);
+          }
+        }
+      } else if (mounted) {
+        _goTo(Routes.signIn);
+      }
     } else {
       debugPrint("😭");
     }
+  }
+
+  void _goTo(String routeName) {
+    Navigator.pushReplacementNamed(context, routeName);
   }
 
   @override
