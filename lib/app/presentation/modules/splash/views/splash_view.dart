@@ -26,7 +26,7 @@ class _SplashViewState extends State<SplashView> {
     final hasInternet = await connectivityRepo.hasInternet;
 
     if (hasInternet) {
-      debugPrint("🔥");
+      debugPrint("🔥 hay internet ");
       final authenticationRepository = injector.authenticationRepository;
       final isSignedIn = await authenticationRepository.isSignedIn;
 
@@ -44,7 +44,8 @@ class _SplashViewState extends State<SplashView> {
         _goTo(Routes.signIn);
       }
     } else {
-      debugPrint("😭");
+      debugPrint("😭 sin internet");
+      _goTo(Routes.offLine);
     }
   }
 
