@@ -16,7 +16,7 @@ class ConnectivityRepImp implements ConnectivityRepository {
         await _connectivity.checkConnectivity();
     debugPrint("🤔 Resultado conectividad: $result");
 
-    if (result.contains(ConnectivityResult.none)) {
+    if (!result.contains(ConnectivityResult.wifi)) {
       return false;
     }
     return internetChecker.hasInternet();

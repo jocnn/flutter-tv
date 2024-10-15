@@ -7,7 +7,7 @@ class InternetChecker {
     try {
       if (kIsWeb) {
         final response = await get(
-          Uri.parse('google.com'),
+          Uri.parse('8.8.8.8'),
         );
         return response.statusCode == 200;
       } else {
