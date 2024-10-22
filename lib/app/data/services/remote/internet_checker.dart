@@ -15,7 +15,7 @@ class InternetChecker {
         return list.isNotEmpty && list.first.rawAddress.isNotEmpty;
       }
     } catch (e) {
-      debugPrint("😭 Exception : $e", wrapWidth: 1024);
+      debugPrint('😭 Exception : $e', wrapWidth: 1024);
       return false;
     }
   }

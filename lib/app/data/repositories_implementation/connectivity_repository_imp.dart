@@ -13,7 +13,7 @@ class ConnectivityRepImp implements ConnectivityRepository {
   Future<bool> get hasInternet async {
     final List<ConnectivityResult> result =
         await _connectivity.checkConnectivity();
-    debugPrint("🤔 Resultado conectividad: $result");
+    debugPrint('🤔 Resultado conectividad: $result');
 
     if (result.contains(ConnectivityResult.none)) {
       return false;
