@@ -8,9 +8,8 @@ import '../../domain/repositories/authentication_repository.dart';
 const _key = 'sessionId';
 
 class AuthenticationRepositoryImpl implements AuthenticationRepository {
-  final FlutterSecureStorage _secureStorage;
-
   AuthenticationRepositoryImpl(this._secureStorage);
+  final FlutterSecureStorage _secureStorage;
 
   @override
   Future<User?> getUserData() => Future.value(User());
