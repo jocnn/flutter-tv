@@ -50,7 +50,7 @@ class _SignInViewState extends State<SignInView> {
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     onChanged: (text) {
                       setState(() {
-                        _password = text.replaceAll(' ', '').toLowerCase();
+                        _password = text.replaceAll(' ', '');
                       });
                     },
                     decoration: const InputDecoration(
@@ -58,7 +58,7 @@ class _SignInViewState extends State<SignInView> {
                       hintStyle: TextStyle(color: Colors.black38),
                     ),
                     validator: (value) {
-                      value = value?.replaceAll(' ', '').toLowerCase() ?? '';
+                      value = value?.replaceAll(' ', '') ?? '';
 
                       if (value.length < 4) return 'Invalid password';
                       return null;
@@ -114,6 +114,7 @@ class _SignInViewState extends State<SignInView> {
           SignInFailure.notFound: 'Not found',
           SignInFailure.unAuthorized: 'Invalid password',
           SignInFailure.unknown: 'Error',
+          SignInFailure.network: 'Network error',
         }[failure];
 
         ScaffoldMessenger.of(context).showSnackBar(
