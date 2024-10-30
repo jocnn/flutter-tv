@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../domain/either.dart';
@@ -32,39 +30,30 @@ class AuthenticationRepositoryImpl implements AuthenticationRepository {
     String username,
     String password,
   ) async {
-    final requestToken = await _authenticationAPI.createRequestToken();
+    final requestTokenResult = await _authenticationAPI.createRequestToken();
+    return requestTokenResult.when(
+      (failure) => Either.left(failure),
+      (requestToken) async {
+        final loginResult = await _authenticationAPI.createSessionWithLogin(
+          username: username,
+          password: password,
+          requestToken: requestToken,
+        );
 
-    if (requestToken == null) {
-      log('😭 : $requestToken');
-      return Either.left(SignInFailure.unknown);
-    }
-
-    final loginResult = await _authenticationAPI.createSessionWithLogin(
-      username: username,
-      password: password,
-      requestToken: requestToken,
-    );
-
-    log('🤞 loginResult:  $loginResult');
-
-    return loginResult.when(
-      (failure) async {
-        log('🌋 $failure');
-        return Either.left(failure);
-      },
-      (newRequestToken) async {
-        log('✨');
-        final sessionResult =
-            await _authenticationAPI.createSession(newRequestToken);
-        log('⛳️');
-        return sessionResult.when(
-          (failure) async {
-            log('🚫 $failure');
-            return Either.left(failure);
-          },
-          (sessionId) async {
-            await _secureStorage.write(key: _key, value: sessionId);
-            return Either.right(User());
+        return loginResult.when(
+          (failure) => Either.left(failure),
+          (newRequestToken) async {
+            final sessionResult =
+                await _authenticationAPI.createSession(newRequestToken);
+            return sessionResult.when(
+              (failure) async {
+                return Either.left(failure);
+              },
+              (sessionId) async {
+                await _secureStorage.write(key: _key, value: sessionId);
+                return Either.right(User());
+              },
+            );
           },
         );
       },
