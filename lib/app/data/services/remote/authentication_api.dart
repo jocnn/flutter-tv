@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import '../../../domain/either.dart';
 import '../../../domain/enums.dart';
@@ -10,23 +9,38 @@ class AuthenticationAPI {
 
   final Http _http;
 
-  Future<Either<SignInFailure, String>> createRequestToken() async {
-    final result = await _http.request('/authentication/token/new');
+  Either<SignInFailure, String> _handleFailure(HttpFailure failure) {
+    if (failure.statusCode != null) {
+      switch (failure.statusCode) {
+        case 401:
+          return Either.left(SignInFailure.unAuthorized);
+        case 404:
+          return Either.left(SignInFailure.notFound);
+        default:
+          return Either.left(SignInFailure.unknown);
+      }
+    }
 
-    return result.when(
-      (failure) {
-        if (failure.exception is NetworkException) {
-          return Either.left(SignInFailure.network);
-        }
-        return Either.left(SignInFailure.unknown);
-      },
-      (responseBody) {
+    if (failure.exception is NetworkException) {
+      return Either.left(SignInFailure.network);
+    }
+    return Either.left(SignInFailure.unknown);
+  }
+
+  Future<Either<SignInFailure, String>> createRequestToken() async {
+    final result = await _http.request(
+      '/authentication/token/new',
+      onSuccess: (responseBody) {
         final json = Map<String, dynamic>.from(
           jsonDecode(responseBody),
         );
-        log('😍 request token: ${json['request_token']}');
-        return Either.right(json['request_token'] as String);
+        return json['request_token'] as String;
       },
+    );
+
+    return result.when(
+      _handleFailure,
+      (requestToken) => Either.right(requestToken),
     );
   }
 
@@ -37,6 +51,12 @@ class AuthenticationAPI {
   }) async {
     final result = await _http.request(
       '/authentication/token/validate_with_login',
+      onSuccess: (responseBody) {
+        final json = Map<String, dynamic>.from(
+          jsonDecode(responseBody),
+        );
+        return json['request_token'] as String;
+      },
       method: HttpMethods.post,
       body: {
         'username': username,
@@ -46,30 +66,8 @@ class AuthenticationAPI {
     );
 
     return result.when(
-      (failure) {
-        if (failure.statusCode != null) {
-          switch (failure.statusCode) {
-            case 401:
-              return Either.left(SignInFailure.unAuthorized);
-            case 404:
-              return Either.left(SignInFailure.notFound);
-            default:
-              return Either.left(SignInFailure.unknown);
-          }
-        }
-
-        if (failure.exception is NetworkException) {
-          return Either.left(SignInFailure.network);
-        }
-        return Either.left(SignInFailure.unknown);
-      },
-      (responseBody) {
-        final json = Map<String, dynamic>.from(
-          jsonDecode(responseBody),
-        );
-        final newRequestToken = json['request_token'] as String;
-        return Either.right(newRequestToken);
-      },
+      _handleFailure,
+      (newRequestToken) => Either.right(newRequestToken),
     );
   }
 
@@ -78,6 +76,12 @@ class AuthenticationAPI {
   ) async {
     final result = await _http.request(
       '/authentication/session/new',
+      onSuccess: (responseBody) {
+        final json = Map<String, dynamic>.from(
+          jsonDecode(responseBody),
+        );
+        return json['session_id'] as String;
+      },
       method: HttpMethods.post,
       body: {
         'request_token': requestToken,
@@ -85,19 +89,8 @@ class AuthenticationAPI {
     );
 
     return result.when(
-      (failure) {
-        if (failure.exception is NetworkException) {
-          return Either.left(SignInFailure.network);
-        }
-        return Either.left(SignInFailure.unknown);
-      },
-      (responseBody) {
-        final json = Map<String, dynamic>.from(
-          jsonDecode(responseBody),
-        );
-        final sessionId = json['session_id'] as String;
-        return Either.right(sessionId);
-      },
+      _handleFailure,
+      (sessionId) => Either.right(sessionId),
     );
   }
 }
