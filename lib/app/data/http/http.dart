@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 
 import '../../domain/either.dart';
@@ -47,6 +49,8 @@ class Http {
     Map<String, dynamic> body = const {},
     bool useApiKey = true,
   }) async {
+    Map<String, dynamic> logs = {};
+    StackTrace? stackTrace;
     try {
       if (useApiKey) {
         queryParams = {
@@ -69,6 +73,12 @@ class Http {
 
       late final Response response;
       final bodyString = jsonEncode(body);
+      logs = {
+        '🔥': '🔥',
+        'url': url.toString(),
+        'method': method.name,
+        'body': body,
+      };
 
       switch (method) {
         case HttpMethods.get:
@@ -103,6 +113,14 @@ class Http {
       }
 
       final statusCode = response.statusCode;
+
+      logs = {
+        ...logs,
+        'startTime': DateTime.now().toString(),
+        'statusCode': statusCode,
+        'responseBody': jsonDecode(response.body),
+      };
+
       if (statusCode >= 200 && statusCode < 300) {
         return Either.right(
           onSuccess(response.body),
@@ -114,17 +132,43 @@ class Http {
           statusCode: statusCode,
         ),
       );
-    } catch (e) {
+    } catch (e, s) {
+      logs = {
+        ...logs,
+        'exception': e.runtimeType,
+      };
+      stackTrace = s;
+
       if (e is SocketException || e is ClientException) {
+        logs = {
+          ...logs,
+          'exception': 'NetworkException',
+        };
+
         return Either.left(HttpFailure(
           exception: NetworkException(),
         ));
       }
+
       return Either.left(
         HttpFailure(
           exception: e,
         ),
       );
+    } finally {
+      logs = {
+        ...logs,
+        'endTime': DateTime.now().toString(),
+        '⛳️': '⛳️',
+      };
+
+      if (kDebugMode) {
+        log(
+          const JsonEncoder.withIndent(' ').convert(logs),
+          stackTrace: stackTrace,
+        );
+        print('🤔');
+      }
     }
   }
 }
