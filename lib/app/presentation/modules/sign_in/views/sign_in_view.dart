@@ -99,10 +99,7 @@ class _SignInViewState extends State<SignInView> {
       _fetching = true;
     });
 
-    final result = await Provider.of<AuthenticationRepository>(
-      context,
-      listen: false,
-    ).signIn(
+    final result = await context.read<AuthenticationRepository>().signIn(
       _username,
       _password,
     );
