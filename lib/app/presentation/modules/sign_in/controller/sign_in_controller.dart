@@ -5,26 +5,22 @@ class SignInController extends StateNotifier<SignInState> {
   SignInController(super.state);
 
   void onUsernameChanged(String value) {
-    update(
+    onlyUpdate(
       state.copyWith(
         username: value.trim().toLowerCase(),
       ),
-      notify: false,
     );
   }
 
   void onPasswordChanged(String value) {
-    update(
+    onlyUpdate(
       state.copyWith(
         password: value.replaceAll(' ', ''),
       ),
-      notify: false,
     );
   }
 
   void onFetchingChanged(bool value) {
-    update(
-      state.copyWith(fetching: value),
-    );
+    state = state.copyWith(fetching: value);
   }
 }
