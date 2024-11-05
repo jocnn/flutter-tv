@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'sign_in_state.dart';
 
 class SignInController extends ChangeNotifier {
-  SignInState _state = SignInState();
+  SignInState _state = const SignInState();
 
   bool _mounted = true;
 
