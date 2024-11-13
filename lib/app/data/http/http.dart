@@ -42,7 +42,7 @@ class Http {
 
   Future<Either<HttpFailure, R>> request<R>(
     String path, {
-    required R Function(String responseBody) onSuccess,
+    required R Function(dynamic responseBody) onSuccess,
     HttpMethods method = HttpMethods.get,
     Map<String, String> headers = const {},
     Map<String, String> queryParams = const {},
