@@ -23,31 +23,56 @@ class _SplashViewState extends State<SplashView> {
   }
 
   Future<void> _init() async {
-    final ConnectivityRepository connectivityRepository = context.read();
-    final AuthenticationRepository authenticationRepository = context.read();
-    final AccountRepository accountRepository = context.read();
-    final hasInternet = await connectivityRepository.hasInternet;
+    final routeName = await () async {
+      final ConnectivityRepository connectivityRepository = context.read();
+      final AuthenticationRepository authenticationRepository = context.read();
+      final AccountRepository accountRepository = context.read();
 
-    if (hasInternet) {
-      debugPrint('🔥 hay internet ');
+      final hasInternet = connectivityRepository.hasInternet;
+
+      // if (hasInternet) {
+      //   debugPrint('🔥 hay internet ');
+      //   final isSignedIn = await authenticationRepository.isSignedIn;
+
+      //   if (isSignedIn) {
+      //     final user = await accountRepository.getUserData();
+
+      //     if (mounted) {
+      //       if (user != null) {
+      //         _goTo(Routes.home);
+      //       } else {
+      //         _goTo(Routes.signIn);
+      //       }
+      //     }
+      //   } else if (mounted) {
+      //     _goTo(Routes.signIn);
+      //   }
+      // } else {
+      //   debugPrint('😭 sin internet');
+      //   _goTo(Routes.offLine);
+      // }
+
+      if (await hasInternet == false) {
+        return Routes.offLine;
+      }
+
       final isSignedIn = await authenticationRepository.isSignedIn;
 
-      if (isSignedIn) {
-        final user = await accountRepository.getUserData();
-
-        if (mounted) {
-          if (user != null) {
-            _goTo(Routes.home);
-          } else {
-            _goTo(Routes.signIn);
-          }
-        }
-      } else if (mounted) {
-        _goTo(Routes.signIn);
+      if (!isSignedIn) {
+        return Routes.signIn;
       }
-    } else {
-      debugPrint('😭 sin internet');
-      _goTo(Routes.offLine);
+
+      final user = await accountRepository.getUserData();
+
+      if (user != null) {
+        return Routes.home;
+      }
+
+      return Routes.signIn;
+    }();
+
+    if (mounted) {
+      _goTo(routeName);
     }
   }
 
@@ -59,7 +84,11 @@ class _SplashViewState extends State<SplashView> {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: CircularProgressIndicator(),
+        child: SizedBox(
+          height: 80,
+          width: 80,
+          child: CircularProgressIndicator(),
+        ),
       ),
     );
   }

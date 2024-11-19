@@ -9,7 +9,7 @@ class AccountAPI {
   Future<User?> getAccount(String sessionId) async {
     final result = await _http.request(
       '/account',
-      queryParams: {
+      queryParameters: {
         'session_id': sessionId,
       },
       onSuccess: (json) {
