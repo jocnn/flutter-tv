@@ -33,14 +33,16 @@ class SubmitButton extends StatelessWidget {
 
     final result = await controller.submit();
 
-    if (!controller.mounted) return;
+    if (!controller.mounted) {
+      return;
+    }
 
     result.when(
       (failure) {
         final message = {
           SignInFailure.notFound: 'Not found',
           SignInFailure.unAuthorized: 'Invalid password',
-          SignInFailure.unknown: 'Error',
+          SignInFailure.unknown: '😭 Error',
           SignInFailure.network: 'Network error',
         }[failure];
 
